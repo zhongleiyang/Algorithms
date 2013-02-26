@@ -9,7 +9,6 @@ public class PercolationStats
        percolationThresholds = new double[T];
        for(int time = 0; time < T; time++)
        {
-           StdOut.println(time);
            Percolation percolation = new Percolation(N);
            int count = 0;
            while(!percolation.percolates())
@@ -45,11 +44,18 @@ public class PercolationStats
    }
    public static void main(String[] args)   // test client, described below
    {
-         int N = Integer.parseInt(args[0]);        
-         int T = Integer.parseInt(args[1]);    
-         PercolationStats percolationStats = new PercolationStats(N, T);
-         StdOut.println("mean" + "                    =" + percolationStats.mean());
-         StdOut.println("stddev" + "                  =" + percolationStats.stddev());
-         StdOut.println("95% confidence interval"  + " =" + percolationStats.confidenceLo() + ", " + percolationStats.confidenceHi());
+       if (args.length == 2 && Integer.parseInt(args[0]) > 0 && Integer.parseInt(args[1]) > 0) 
+       {
+           int N = Integer.parseInt(args[0]);        
+           int T = Integer.parseInt(args[1]);    
+           PercolationStats percolationStats = new PercolationStats(N, T);
+           StdOut.println("mean" + "                    = " + percolationStats.mean());
+           StdOut.println("stddev" + "                  = " + percolationStats.stddev());
+           StdOut.println("95% confidence interval"  + " = " + percolationStats.confidenceLo() + ", " + percolationStats.confidenceHi());
+       }
+       else
+       {
+           throw new RuntimeException("Invalid arguments");
+       }
    }
 }
