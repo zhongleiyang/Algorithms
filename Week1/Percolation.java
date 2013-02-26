@@ -21,7 +21,14 @@ public class Percolation
             uf.union((i - 1) * width + j, i * width + j);  
         
         if(j > 0 && isOpen(i, j - 1) == true)
-               uf.union(i * width + j - 1, i * width + j);         
+               uf.union(i * width + j - 1, i * width + j);      
+        
+        if(i <width - 1 && isOpen(i + 1, j) == true)
+            uf.union((i + 1) * width + j, i * width + j);  
+        
+        if(j < width - 1 && isOpen(i, j + 1) == true)
+               uf.union(i * width + j + 1, i * width + j);   
+        
     }
     public boolean isOpen(int i, int j)    // is site (row i, column j) open?
     {   
