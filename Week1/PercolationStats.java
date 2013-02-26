@@ -1,7 +1,7 @@
 public class PercolationStats 
 {
     private int times;
-    public double[] percolationThresholds;
+    private double[] percolationThresholds;
     
    public PercolationStats(int N, int T)    // perform T independent computational experiments on an N-by-N grid
    {
@@ -13,15 +13,17 @@ public class PercolationStats
        {
            Percolation percolation = new Percolation(N);
            int count = 0;
-           while(!percolation.percolates())
+           while(count < N || !percolation.percolates())
            {
-                int i = StdRandom.uniform(0,N);
-                int j = StdRandom.uniform(0,N);
-                if(percolation.isOpen(i ,j) == false)
+                int i = StdRandom.uniform(1, N+1);
+                int j = StdRandom.uniform(1, N+1);
+                while(percolation.isOpen(i ,j))
                 {
-                    count++;
-                    percolation.open(i ,j);
+                    i = StdRandom.uniform(1, N+1);
+                    j = StdRandom.uniform(1, N+1);
                 }
+                count++;
+                percolation.open(i ,j);
            }
            percolationThresholds[time] = 1.0 * count / (N * N);
        }       
