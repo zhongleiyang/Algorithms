@@ -7,10 +7,16 @@
     private boolean isFullChange;
     private boolean isPercolate;
     private int count;
+    private int[] lastRowParentIds;
     
     public Percolation(int N)              // create N-by-N grid, with all sites blocked
     {       
         width = N + 1;
+        lastRowParentIds = new int[width];
+        
+        for(int i = 0; i < width; i++)
+            lastRowParentIds[i] = (width - 1) * width + i;
+        
         status = new boolean[width * width];
         isFullArray = new boolean[width * width];
         for(int i= 0; i < width * width; i++)
@@ -55,6 +61,12 @@
                         isFullChange = true;
                     }
                     uf.union((i - 1) * width + j, i * width + j); 
+                    int parent = uf.find(i * width + j);
+                    for(int k = 0; k < width; k++)
+                    {
+                         if(lastRowParentIds[k] == parent1 || lastRowParentIds[k] == parent2)   
+                             lastRowParentIds[k] = parent;
+                    }                       
                 }
             }
             
@@ -72,6 +84,12 @@
                         isFullChange = true;
                     }
                     uf.union(i * width + j - 1, i * width + j); 
+                    int parent = uf.find(i * width + j);
+                    for(int k = 0; k < width; k++)
+                    {
+                         if(lastRowParentIds[k] == parent1 || lastRowParentIds[k] == parent2)   
+                             lastRowParentIds[k] = parent;
+                    } 
                 }
             }
             
@@ -88,7 +106,13 @@
                         isFullArray[i * width + j] = true;
                         isFullChange = true;
                     }
-                    uf.union((i + 1) * width + j, i * width + j);  
+                    uf.union((i + 1) * width + j, i * width + j); 
+                    int parent = uf.find(i * width + j);
+                    for(int k = 0; k < width; k++)
+                    {
+                         if(lastRowParentIds[k] == parent1 || lastRowParentIds[k] == parent2)   
+                             lastRowParentIds[k] = parent;
+                    } 
                 }
             }
             
@@ -106,6 +130,12 @@
                         isFullChange = true;
                     }
                     uf.union(i * width + j + 1, i * width + j); 
+                    int parent = uf.find(i * width + j);
+                    for(int k = 0; k < width; k++)
+                    {
+                         if(lastRowParentIds[k] == parent1 || lastRowParentIds[k] == parent2)   
+                             lastRowParentIds[k] = parent;
+                    } 
                 }
             }            
         }       
@@ -125,33 +155,10 @@
         
         if(isFullArray[i * width + j])
             return true;
-        
-        if(isIsland(i, j))
-            return false;
-        
+              
         return isFullArray[uf.find(i * width + j)];      
     }
-    
-    private boolean isIsland(int i, int j)
-    {  
-        if(!isOpen(i, j))
-            return true;
         
-        if(i > 1 && isOpen(i - 1, j))
-            return false;
-        
-        if(j > 1 && isOpen(i, j - 1))
-            return false;
-        
-        if(i < width - 1 && isOpen(i + 1, j))
-            return false;
-        
-        if(j < width - 1 && isOpen(i, j + 1))
-            return false;
-        
-        return true;
-    }
-    
     public boolean percolates()            // does the system percolate?
     {
         if(isPercolate)
@@ -163,20 +170,12 @@
             boolean perStatu = false;
             for(int i = 1; i < width; i++)
             {
-                if(isOpen(width - 1, i) != perStatu)
+                if(isOpen(width - 1, i))
                 {
-                    if(isOpen(width - 1, i) == true)
-                    {
-                        perStatu = true;
-                        if(isFull(width - 1, i))
-                        {
-                            isPercolate = true;
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        perStatu  = false;
+                    if(isFullArray[lastRowParentIds[i]])
+                    {    
+                        isPercolate = true;
+                        return true;
                     }
                 }
             }
