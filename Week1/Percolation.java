@@ -1,9 +1,12 @@
-public class Percolation 
+    public class Percolation 
 {
     private boolean[] status;        //flase when blocked,true when open
     private int width;
     private WeightedQuickUnionUF uf;
     private boolean[] isFullArray;  
+    private boolean isFullChange;
+    private boolean isPercolate;
+    private int count;
     
     public Percolation(int N)              // create N-by-N grid, with all sites blocked
     {
@@ -16,6 +19,9 @@ public class Percolation
             isFullArray[i]  = false;
         }
         uf = new WeightedQuickUnionUF(width * width);
+        isFullChange =false;
+        isPercolate = false;
+        count = 0;
     }
     
     
@@ -25,13 +31,17 @@ public class Percolation
             throw new IndexOutOfBoundsException ();
         
         if(!isOpen(i,j))
-        {                   
+        {         
+            count++;
             status[i * width + j] = true;
             
             if(i == 1)
+            {
                 isFullArray[i * width + j] = true;
+                isFullChange = true;
+            }
             
-            if(i > 1 && isOpen(i - 1, j) == true)
+            if(i > 1 && isOpen(i - 1, j) == true) 
             {         
                 int parent1 = uf.find((i - 1) * width + j);
                 int parent2 = uf.find(i * width + j); 
@@ -41,6 +51,7 @@ public class Percolation
                     {
                         isFullArray[parent1] = true;
                         isFullArray[parent2] = true;
+                        isFullChange = true;
                     }
                     uf.union((i - 1) * width + j, i * width + j); 
                 }
@@ -56,6 +67,7 @@ public class Percolation
                     {
                         isFullArray[parent1] = true;
                         isFullArray[parent2] = true;
+                        isFullChange = true;
                     }
                     uf.union(i * width + j - 1, i * width + j); 
                 }
@@ -71,6 +83,7 @@ public class Percolation
                     {
                         isFullArray[parent1] = true;
                         isFullArray[parent2] = true;
+                        isFullChange = true;
                     }
                     uf.union((i + 1) * width + j, i * width + j);  
                 }
@@ -86,6 +99,7 @@ public class Percolation
                     {
                         isFullArray[parent1] = true;
                         isFullArray[parent2] = true;
+                        isFullChange = true;
                     }
                     uf.union(i * width + j + 1, i * width + j); 
                 }
@@ -108,10 +122,20 @@ public class Percolation
     }
     public boolean percolates()            // does the system percolate?
     {
-        for(int i = 1; i < width; i++)
-            if(isOpen(width - 1, i) && isFull(width - 1, i))
+        if(isPercolate)
             return true;
-        
+            
+        if(count >= width - 1 && isFullChange)
+        {
+            isFullChange = false;
+            for(int i = 1; i < width; i++)
+                if(isOpen(width - 1, i) && isFull(width - 1, i))
+            { 
+                isPercolate = true;
+                return true;
+            }
+        }
+                
         return false;
     }
 }
