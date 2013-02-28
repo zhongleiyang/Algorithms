@@ -5,10 +5,10 @@ public class Deque<Item> implements Iterable<Item>
     private int N;          // size of the Deque
     private Node first;     // first of Deque
     private Node last;     // last of Deque
-    private Node perLast; // the former one of last
 
     // helper linked list class
     private class Node {
+        private Node prior;
         private Item item;
         private Node next;
     }
@@ -16,8 +16,7 @@ public class Deque<Item> implements Iterable<Item>
    {
        first = null;
        last = null;
-       perLast= null;
-        N = 0;
+       N = 0;
    }
    public boolean isEmpty()           // is the deque empty?
    {
@@ -36,12 +35,13 @@ public class Deque<Item> implements Iterable<Item>
         first = new Node();
         first.item = item;
         first.next = oldfirst;
+        first.prior = null;
+        
+        if(oldfirst != null)
+            oldfirst.prior =  first;
         
         if(last == null)
-            last = first;  
-       else if(perLast == null)
-           perLast = first;
-        
+            last = first;         
         N++;
    }
    public void addLast(Item item)     // insert the item at the end
@@ -53,11 +53,11 @@ public class Deque<Item> implements Iterable<Item>
         last = new Node();
         last.item = item;
         last.next = null;
+        last.prior = oldLast;
         
         if(oldLast != null)
         {
             oldLast.next = last;
-            perLast = oldLast;
         }
         
         if(first == null)
@@ -68,15 +68,18 @@ public class Deque<Item> implements Iterable<Item>
    public Item removeFirst()          // delete and return the item at the front
    {
        if(N == 0)
-           throw new NullPointerException();
+           throw new NoSuchElementException();
        Node oldfirst = first;
        first = first.next;
        oldfirst.next = null;
        
-       if(first == null)
-           last = null;
-       else if(first.next == null)
-           perLast = null;
+       if(first != null)
+           first.prior = null;
+        else
+        {
+            first = null;
+            last = null;
+        }
        
        N--;
        return oldfirst.item;      
@@ -87,15 +90,17 @@ public class Deque<Item> implements Iterable<Item>
            throw new NoSuchElementException();
 
         Node oldLast = last;
+        last = oldLast.prior;
+        oldLast.prior = null;
         
-        if(perLast == null)
+        if(last != null)
         {
-            first = null;
-            last = null;
+            last.next = null;
         }
         else
         {
-            perLast.next = null;
+            first = null;
+            last = null;
         }
         
         N--;
