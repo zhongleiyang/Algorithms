@@ -17,11 +17,16 @@ public class Fast {
               points[i].draw();
         }
         double[] slopes = new double[num];
+        Point[] haveOutStartPoints = new Point[num];
         double[] haveOutSlopes = new double[num];
         int count = 0;
         
-        for(int i = 0; i < num - 3; i++)
+        for(int i = 0; i < num; i++)
         {
+            for(int k = 0; k < num; k++)
+            {
+                copyPoints[k] = points[k];
+            }
             Arrays.sort(copyPoints, points[i].SLOPE_ORDER);
             
             for(int j = 0; j < num; j++)
@@ -37,35 +42,37 @@ public class Fast {
                      last++;
                  if(last - first > 2)
                  {
+                     Point[] sortPoints = new Point[last - first + 1];
+                     sortPoints[0] = points[i];
+                     for(int t = 1,k = first; k < last; k++)
+                     {
+                         sortPoints[t++]  = copyPoints[k];
+                     }
+                     Arrays.sort(sortPoints); 
                      int z;
-                     for(z = 0; z < count ; z++)
-                         if(Double.compare(haveOutSlopes[z], slopes[first]) == 0)
-                               break;
+                     for(z = 0; z < count; z++)
+                     {
+                          if(haveOutStartPoints[z] == sortPoints[0] 
+                                 && (Double.compare(haveOutSlopes[z], slopes[first]) == 0))
+                              break;
+                     }
                      if(z == count)
                      {
+                         haveOutStartPoints[count] = sortPoints[0];
                          haveOutSlopes[count] = slopes[first];
                          count++;
-                         Point[] sortPoints = new Point[last - first + 1];
-                         sortPoints[0] = points[i];
-                         for(int t = 1,k = first; k < last; k++)
+                         StdOut.print(sortPoints[0].toString());
+                         Point perPoint = sortPoints[0];
+                         sortPoints[0].drawTo(sortPoints[last - first]);
+                         for(int k = 1; k < last - first + 1; k++)
                          {
-                            sortPoints[t++]  = copyPoints[k];
-                          }
-                          Arrays.sort(sortPoints); 
-                          StdOut.print(sortPoints[0].toString());
-                          Point perPoint = sortPoints[0];
-                          sortPoints[0].drawTo(sortPoints[last - first]);
-                          for(int k = 1; k < last - first + 1; k++)
-                          {
                              StdOut.print(" -> " + sortPoints[k].toString());
-                          }
-                          StdOut.println();
+                         }
+                         StdOut.println();
                      }
                  }
                  first = last;
-             }
-             for(int k = 0; k < i + 1; k++)
-                 copyPoints[k] = points[i + 1];                         
+             }                      
         }
    }
 }
