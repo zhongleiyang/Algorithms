@@ -17,62 +17,62 @@ public class Fast {
               points[i].draw();
         }
         double[] slopes = new double[num];
-        Point[] haveOutStartPoints = new Point[num];
-        double[] haveOutSlopes = new double[num];
+        double[] haveOutSlopes = new double[num * num];
+        Point[] haveOutPoint = new Point[num * num];
         int count = 0;
         
-        for(int i = 0; i < num; i++)
+        for(int i = 0; i < num - 3; i++)
         {
-            for(int k = 0; k < num; k++)
-            {
-                copyPoints[k] = points[k];
-            }
             Arrays.sort(copyPoints, points[i].SLOPE_ORDER);
             
             for(int j = 0; j < num; j++)
             {
                 slopes[j] = points[i].slopeTo(copyPoints[j]);
             }
-            
-             int first = i + 1;
-             int last = i + 1;          
+            int first = 0,last, nextStart;
+            for(int j = 0;j < num; j++)
+                if(slopes[j] ==  Double.NEGATIVE_INFINITY)
+                   first++;
+            last = first;   
+            nextStart = first;
              while(first < num - 2)
              {
                  while(last < num && (Double.compare(slopes[first],slopes[last]) == 0))
                      last++;
                  if(last - first > 2)
                  {
-                     Point[] sortPoints = new Point[last - first + 1];
-                     sortPoints[0] = points[i];
-                     for(int t = 1,k = first; k < last; k++)
-                     {
-                         sortPoints[t++]  = copyPoints[k];
-                     }
-                     Arrays.sort(sortPoints); 
                      int z;
-                     for(z = 0; z < count; z++)
-                     {
-                          if(haveOutStartPoints[z] == sortPoints[0] 
-                                 && (Double.compare(haveOutSlopes[z], slopes[first]) == 0))
-                              break;
-                     }
+                     for(z = 0; z < count ; z++)
+                         if((Double.compare(haveOutSlopes[z], slopes[first]) == 0)
+                           && ((Double.compare(haveOutSlopes[z], haveOutPoint[z].slopeTo(points[i]))==0)
+                              || (haveOutPoint[z].slopeTo(points[i]) ==  Double.NEGATIVE_INFINITY)))
+                               break;
                      if(z == count)
                      {
-                         haveOutStartPoints[count] = sortPoints[0];
                          haveOutSlopes[count] = slopes[first];
+                         haveOutPoint[count] = points[i];
                          count++;
-                         StdOut.print(sortPoints[0].toString());
-                         Point perPoint = sortPoints[0];
-                         sortPoints[0].drawTo(sortPoints[last - first]);
-                         for(int k = 1; k < last - first + 1; k++)
+                         Point[] sortPoints = new Point[last - first + 1];
+                         sortPoints[0] = points[i];
+                         for(int t = 1,k = first; k < last; k++)
                          {
+                            sortPoints[t++]  = copyPoints[k];
+                          }
+                          Arrays.sort(sortPoints); 
+                          StdOut.print(sortPoints[0].toString());
+                          Point perPoint = sortPoints[0];
+                          sortPoints[0].drawTo(sortPoints[last - first]);
+                          for(int k = 1; k < last - first + 1; k++)
+                          {
                              StdOut.print(" -> " + sortPoints[k].toString());
-                         }
-                         StdOut.println();
+                          }
+                          StdOut.println();
                      }
                  }
                  first = last;
-             }                      
+            }
+             for(int k = 0; k < nextStart; k++)
+                 copyPoints[k] = points[i + 1];                         
         }
    }
 }
