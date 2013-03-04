@@ -65,12 +65,12 @@ public class Board
     public Board twin()                    // a board obtained by exchanging two adjacent blocks in the same row
     {
         int[][] newBlocks = new int[dim][dim];
-        int x;
+        int x = 0;
         
          for(int i = 0; i < dim; i++)
             for(int j = 0; j < dim; j++)
          {
-             if(interBlocks[1][j] == 0)
+             if(interBlocks[i][j] == 0)
                  x = i;
              newBlocks[i][j] = interBlocks[i][j];
          }
@@ -148,13 +148,13 @@ public class Board
     
     public String toString()               // string representation of the board (in the output format specified below)
     {
-        String s = ""; 
-        s += dim + "\n";
+        String s = "\n"; 
+        s += dim;
         for(int i = 0; i < dim; i++)
         {
+            s += "\n";
             for(int j = 0; j < dim; j++)
                  s += " " + interBlocks[i][j] + " ";
-            s += "\n";
         }
         
         return s;

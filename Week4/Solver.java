@@ -28,55 +28,80 @@ class SearchNode implements Comparable<SearchNode>
 
 public class Solver 
 {
-    private MinPQ<SearchNode> priorityQueue;
-    private Stack<Board> historyList;
-    private Board initialBoard;
+    private MinPQ<SearchNode> priorityQueue0;
+    private MinPQ<SearchNode> priorityQueue1;
+    private Stack<Board> historyList0;
+    private Stack<Board> historyList1;
+    private Board[] initialBoard;
     private Stack<Board> solutionList;
     private boolean isGoal;
-    private SearchNode lastNode;
+    private SearchNode[] lastNode;
+    private int turn;
     
     public Solver(Board initial)            // find a solution to the initial board (using the A* algorithm)
     {
-        initialBoard = initial;
+        initialBoard = new Board[2];
+        initialBoard[0] = initial;
+        initialBoard[1] = initial.twin();
+
         isGoal = false;
         
-        priorityQueue = new MinPQ<SearchNode>();
-        historyList = new Stack<Board>();
-        SearchNode initialNode = new SearchNode(initialBoard, 0, null); 
-        priorityQueue.insert(initialNode);
-        historyList.push(initialNode.board);
+        priorityQueue0 = new MinPQ<SearchNode>();
+        priorityQueue1 = new MinPQ<SearchNode>();
+        historyList0 = new Stack<Board>();
+        historyList1 = new Stack<Board>();
         
-        int count = 0;
+        SearchNode initialNode0 = new SearchNode(initialBoard[0], 0, null);
+        SearchNode initialNode1 = new SearchNode(initialBoard[1], 0, null);
+        priorityQueue0.insert(initialNode0);
+        historyList0.push(initialNode0.board);
+        priorityQueue1.insert(initialNode1);
+        historyList1.push(initialNode1.board);
         
-        while(!priorityQueue.isEmpty() && count < 5)
+        lastNode = new SearchNode[2];
+        turn = 0;
+        
+        
+        while(!priorityQueue0.isEmpty() && !priorityQueue1.isEmpty())
         {
-            count++;
-            lastNode = priorityQueue.delMin();
-            StdOut.println(priorityQueue.size());
+            MinPQ<SearchNode> priorityQueue;
+            Stack<Board> historyList;
+            if(turn == 0)
+            {
+                priorityQueue = priorityQueue0;
+                historyList = historyList0;
+            }
+            else
+            {
+                priorityQueue = priorityQueue1;
+                historyList = historyList1;
+            }
             
-            if(lastNode.board.isGoal())
+            lastNode[turn] = priorityQueue.delMin();
+            
+            if(lastNode[turn].board.isGoal())
             {
                 isGoal = true;
                 break;
                 
             }
             
-            for (Board board : lastNode.board.neighbors())
+            for (Board board : lastNode[turn].board.neighbors())
             {
-                if(isFindedInHistory(board) == false)
+                if(isFindedInHistory(historyList, board) == false)
                 {
-                    SearchNode neighbor = new SearchNode(board, lastNode.reachMoves + 1, lastNode); 
+                    SearchNode neighbor = new SearchNode(board, lastNode[turn].reachMoves + 1, lastNode[turn]); 
                     priorityQueue.insert(neighbor);
                     historyList.push(neighbor.board);
                 }
             }    
-            StdOut.println(priorityQueue.size());
+            turn = 1 - turn;
         }           
     }
     
-    private boolean isFindedInHistory(Board board)
+    private boolean isFindedInHistory(Stack<Board> list, Board board)
     {
-        for (Board temp : historyList)
+        for (Board temp : list)
         {
             if(temp.equals(board))
                 return true;
@@ -87,34 +112,36 @@ public class Solver
     
     private void writePathToList(Stack<Board> list,  SearchNode node)
     {
-        if(node.previous != null)
-            writePathToList(list, node.previous);
-        list.push(node.board);        
+        while(node != null)
+        {
+           list.push(node.board);  
+           node = node.previous;
+        }      
     }
     
     public boolean isSolvable()             // is the initial board solvable?
     {
-        return isGoal;
+        return isGoal && turn == 0;
     }
     public int moves()                      // min number of moves to solve initial board; -1 if no solution
     {
-        if(isGoal)
+        if(isGoal && turn == 0)
         { 
-            if(lastNode == null)
+            if(lastNode[0] == null)
                 return 0;
-            return lastNode.reachMoves;
+            return lastNode[0].reachMoves;
         }
         
         return -1;
     }
     public Iterable<Board> solution()       // sequence of boards in a shortest solution; null if no solution
     {
-        if(isGoal)
+        if(isGoal && turn == 0)
         {
             if(solutionList == null)
             {
                 solutionList = new Stack<Board>();
-                writePathToList(solutionList, lastNode);
+                writePathToList(solutionList, lastNode[0]);
             }
             return solutionList;
         }
@@ -131,7 +158,7 @@ public class Solver
             for (int j = 0; j < N; j++)
             blocks[i][j] = in.readInt();
         Board initial = new Board(blocks);
-        
+               
         // solve the puzzle
         Solver solver = new Solver(initial);
         
