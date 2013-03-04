@@ -40,40 +40,38 @@ public class Solver
         initialBoard = initial;
         isGoal = false;
         
-        if(initialBoard.isGoal())
+        priorityQueue = new MinPQ<SearchNode>();
+        historyList = new Stack<Board>();
+        SearchNode initialNode = new SearchNode(initialBoard, 0, null); 
+        priorityQueue.insert(initialNode);
+        historyList.push(initialNode.board);
+        
+        int count = 0;
+        
+        while(!priorityQueue.isEmpty() && count < 5)
         {
-            isGoal = true;
-        }
-        else
-        {
-            priorityQueue = new MinPQ<SearchNode>();
-            historyList = new Stack<Board>();
-            SearchNode initialNode = new SearchNode(initialBoard, 0, null); 
-            priorityQueue.insert(initialNode);
-            historyList.push(initialNode.board);
+            count++;
+            lastNode = priorityQueue.delMin();
+            StdOut.println(priorityQueue.size());
             
-            while(!priorityQueue.isEmpty())
+            if(lastNode.board.isGoal())
             {
-                StdOut.println(priorityQueue.size());
-                lastNode = priorityQueue.delMin();
-                                          
-                if(lastNode.board.isGoal())
-                {
-                    isGoal = true;
-                    break;
-                }
+                isGoal = true;
+                break;
                 
-                for (Board board : lastNode.board.neighbors())
+            }
+            
+            for (Board board : lastNode.board.neighbors())
+            {
+                if(isFindedInHistory(board) == false)
                 {
-                    if(isFindedInHistory(board) == false)
-                    {
-                        SearchNode neighbor = new SearchNode(board, lastNode.reachMoves + 1, lastNode); 
-                        priorityQueue.insert(neighbor);
-                        historyList.push(neighbor.board);
-                    }
-                }        
+                    SearchNode neighbor = new SearchNode(board, lastNode.reachMoves + 1, lastNode); 
+                    priorityQueue.insert(neighbor);
+                    historyList.push(neighbor.board);
+                }
             }    
-        }
+            StdOut.println(priorityQueue.size());
+        }           
     }
     
     private boolean isFindedInHistory(Board board)
@@ -91,7 +89,7 @@ public class Solver
     {
         if(node.previous != null)
             writePathToList(list, node.previous);
-        solutionList.push(node.board);        
+        list.push(node.board);        
     }
     
     public boolean isSolvable()             // is the initial board solvable?
@@ -101,7 +99,11 @@ public class Solver
     public int moves()                      // min number of moves to solve initial board; -1 if no solution
     {
         if(isGoal)
+        { 
+            if(lastNode == null)
+                return 0;
             return lastNode.reachMoves;
+        }
         
         return -1;
     }
@@ -111,7 +113,7 @@ public class Solver
         {
             if(solutionList == null)
             {
-                Stack<Board> solutionList = new Stack<Board>();
+                solutionList = new Stack<Board>();
                 writePathToList(solutionList, lastNode);
             }
             return solutionList;

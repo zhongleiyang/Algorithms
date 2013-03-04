@@ -51,7 +51,12 @@ public class Board
         for(int i = 0; i < dim; i++)
             for(int j = 0; j < dim; j++)
             {
-                if(interBlocks[i][j] != i * dim + j)
+                if(i == dim - 1 && j ==  dim - 1)
+                {
+                    if(interBlocks[i][j] != 0)
+                        return false;
+                }
+                else if(interBlocks[i][j] != i * dim + j + 1)
                     return false;
             }
         return true;
@@ -60,11 +65,23 @@ public class Board
     public Board twin()                    // a board obtained by exchanging two adjacent blocks in the same row
     {
         int[][] newBlocks = new int[dim][dim];
+        int x;
+        
          for(int i = 0; i < dim; i++)
             for(int j = 0; j < dim; j++)
-                newBlocks[i][j] = interBlocks[i][j];
-         newBlocks[0][0] = interBlocks[0][1];
-         newBlocks[0][1] = interBlocks[0][0];
+         {
+             if(interBlocks[1][j] == 0)
+                 x = i;
+             newBlocks[i][j] = interBlocks[i][j];
+         }
+         if(x != 0)
+             x = 0;
+         else 
+             x = 1;
+         
+         newBlocks[x][0] = interBlocks[x][1];
+         newBlocks[x][1] = interBlocks[x][0];
+
          return new Board(newBlocks);        
     }
     
@@ -72,7 +89,7 @@ public class Board
     {
         if (y == this) return true;
         if (y == null) return false;
-        return ((Board)y).toString() == this.toString();
+        return ((Board)y).toString().compareTo(this.toString()) == 0;
     }
     
     public Iterable<Board> neighbors()     // all neighboring boards
