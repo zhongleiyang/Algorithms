@@ -3,8 +3,8 @@ class SearchNode implements Comparable<SearchNode>
     public int reachMoves;
     public Board board;
     public SearchNode previous;
-    private int manhattan;
-    
+    public int manhattan;
+
     public SearchNode(Board _board, int _reachMoves,SearchNode _previous)
     {
         board = _board;
@@ -21,10 +21,10 @@ class SearchNode implements Comparable<SearchNode>
          if(this.manhattan +  this.reachMoves > that.manhattan + that.reachMoves)
              return 1;
          
-         if(this.reachMoves < that.reachMoves)
+         if(this.reachMoves > that.reachMoves)
             return -1;
          
-         if(this.reachMoves > that.reachMoves)
+         if(this.reachMoves < that.reachMoves)
              return 1;
          return 0;
     }
@@ -34,8 +34,6 @@ public class Solver
 {
     private MinPQ<SearchNode> priorityQueue0;
     private MinPQ<SearchNode> priorityQueue1;
-    private Stack<Board> historyList0;
-    private Stack<Board> historyList1;
     private Board[] initialBoard;
     private Stack<Board> solutionList;
     private boolean isGoal;
@@ -52,15 +50,12 @@ public class Solver
         
         priorityQueue0 = new MinPQ<SearchNode>();
         priorityQueue1 = new MinPQ<SearchNode>();
-        historyList0 = new Stack<Board>();
-        historyList1 = new Stack<Board>();
         
         SearchNode initialNode0 = new SearchNode(initialBoard[0], 0, null);
         SearchNode initialNode1 = new SearchNode(initialBoard[1], 0, null);
         priorityQueue0.insert(initialNode0);
-        historyList0.push(initialNode0.board);
         priorityQueue1.insert(initialNode1);
-        historyList1.push(initialNode1.board);
+
         
         lastNode = new SearchNode[2];
         turn = 0;
@@ -68,17 +63,10 @@ public class Solver
         while(!priorityQueue0.isEmpty() && !priorityQueue1.isEmpty())
         {
             MinPQ<SearchNode> priorityQueue;
-            Stack<Board> historyList;
             if(turn == 0)
-            {
                 priorityQueue = priorityQueue0;
-                historyList = historyList0;
-            }
             else
-            {
                 priorityQueue = priorityQueue1;
-                historyList = historyList1;
-            }
                       
             lastNode[turn] = priorityQueue.delMin();
 
@@ -91,16 +79,8 @@ public class Solver
             for (Board board : lastNode[turn].board.neighbors())
             {
                 SearchNode node = lastNode[turn].previous;
-                boolean isFind = false;
-                while(node != null && isFind == false)
-                {
-                    if(board.equals(node.board))
-                        isFind = true;
-                    
-                     node = node.previous;
-                }    
-                
-                if(isFind == false)
+   
+                if(node == null || !board.equals(node.board))                    
                 {
                     SearchNode neighbor = new SearchNode(board, lastNode[turn].reachMoves + 1, lastNode[turn]); 
                     priorityQueue.insert(neighbor);
@@ -109,16 +89,6 @@ public class Solver
            
             turn = 1 - turn;
         }           
-    }
-    private boolean isFindedInHistory(Stack<Board> list, Board board)
-    {
-        for (Board temp : list)
-        {
-            if(temp.equals(board))
-                return true;
-        }    
-        
-        return false;
     }
     
     private void writePathToList(Stack<Board> list,  SearchNode node)
