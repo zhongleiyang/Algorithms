@@ -5,8 +5,12 @@ public class Board
     private int dim;
     public Board(int[][] blocks)           // construct a board from an N-by-N array of blocks
     {
-        interBlocks = blocks;
-        dim = interBlocks[0].length;
+        dim = blocks[0].length;
+        interBlocks = new int[dim][dim];
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++)
+                 interBlocks[i][j] = blocks[i][j];
+        
     }
                                            // (where blocks[i][j] = block in row i, column j)
     public int dimension()                 // board dimension N
@@ -89,6 +93,7 @@ public class Board
     {
         if (y == this) return true;
         if (y == null) return false;
+        if (this.getClass() != y.getClass()) return false;
         return ((Board)y).toString().compareTo(this.toString()) == 0;
     }
     
@@ -107,6 +112,24 @@ public class Board
                 }
             }
         
+        if(blankBlockY + 1 < dim)
+        {
+             int[][] rightBlocks = new int[dim][dim];
+             copyTo(rightBlocks);
+             rightBlocks[blankBlockX][blankBlockY + 1] = 0;
+             rightBlocks[blankBlockX][blankBlockY] = interBlocks[blankBlockX][blankBlockY + 1];
+             boardList.add(new Board(rightBlocks));
+        }
+                
+        if(blankBlockX + 1 < dim)
+        {
+             int[][] downBlocks = new int[dim][dim];
+             copyTo(downBlocks);
+             downBlocks[blankBlockX + 1][blankBlockY] = 0;
+             downBlocks[blankBlockX][blankBlockY] = interBlocks[blankBlockX + 1][blankBlockY];
+             boardList.add(new Board(downBlocks));
+        }
+        
         if(blankBlockY - 1 >= 0)
         {
              int[][] leftBlocks = new int[dim][dim];
@@ -116,15 +139,6 @@ public class Board
              boardList.add(new Board(leftBlocks));
         }
         
-        if(blankBlockY + 1 < dim)
-        {
-             int[][] rightBlocks = new int[dim][dim];
-             copyTo(rightBlocks);
-             rightBlocks[blankBlockX][blankBlockY + 1] = 0;
-             rightBlocks[blankBlockX][blankBlockY] = interBlocks[blankBlockX][blankBlockY + 1];
-             boardList.add(new Board(rightBlocks));
-        }
-        
         if(blankBlockX - 1 >= 0)
         {
              int[][] topBlocks = new int[dim][dim];
@@ -132,15 +146,6 @@ public class Board
              topBlocks[blankBlockX - 1][blankBlockY] = 0;
              topBlocks[blankBlockX][blankBlockY] = interBlocks[blankBlockX - 1][blankBlockY];
              boardList.add(new Board(topBlocks));
-        }
-        
-        if(blankBlockX + 1 < dim)
-        {
-             int[][] downBlocks = new int[dim][dim];
-             copyTo(downBlocks);
-             downBlocks[blankBlockX + 1][blankBlockY] = 0;
-             downBlocks[blankBlockX][blankBlockY] = interBlocks[blankBlockX + 1][blankBlockY];
-             boardList.add(new Board(downBlocks));
         }
         
         return boardList;
