@@ -16,12 +16,12 @@ class SearchNode implements Comparable<SearchNode>
          int manhattan1 = this.board.manhattan();
          int manhattan2 = that.board.manhattan();
          
-         if(manhattan1 < manhattan2)
+         if(manhattan1 +  this.reachMoves < manhattan2 + that.reachMoves)
              return -1;
          
-         if(manhattan1 > manhattan2)
+         if(manhattan1 +  this.reachMoves > manhattan2 + that.reachMoves)
              return 1;
-         
+                       
          return 0;
     }
 }
@@ -61,6 +61,7 @@ public class Solver
         lastNode = new SearchNode[2];
         turn = 0;
         
+        Queue<SearchNode> candidateList = new Queue<SearchNode>();
         
         while(!priorityQueue0.isEmpty() && !priorityQueue1.isEmpty())
         {
@@ -77,24 +78,35 @@ public class Solver
                 historyList = historyList1;
             }
             
-            lastNode[turn] = priorityQueue.delMin();
+            SearchNode node = priorityQueue.delMin();
+            int manhattan = node.board.manhattan();
+            candidateList.enqueue(node);
+            while(!priorityQueue.isEmpty() && priorityQueue.min().compareTo(node) == 0)
+                candidateList.enqueue(priorityQueue.delMin());
             
-            if(lastNode[turn].board.isGoal())
+            while(!candidateList.isEmpty())
             {
-                isGoal = true;
-                break;
-                
+                lastNode[turn] = candidateList.dequeue();
+                if(lastNode[turn].board.isGoal())
+                {
+                    isGoal = true;
+                    break;       
+                    
+                }               
+                for (Board board : lastNode[turn].board.neighbors())
+                {
+                    if(isFindedInHistory(historyList, board) == false)
+                    {
+                        SearchNode neighbor = new SearchNode(board, lastNode[turn].reachMoves + 1, lastNode[turn]); 
+                        priorityQueue.insert(neighbor);
+                        historyList.push(neighbor.board);
+                    }
+                }    
             }
             
-            for (Board board : lastNode[turn].board.neighbors())
-            {
-                if(isFindedInHistory(historyList, board) == false)
-                {
-                    SearchNode neighbor = new SearchNode(board, lastNode[turn].reachMoves + 1, lastNode[turn]); 
-                    priorityQueue.insert(neighbor);
-                    historyList.push(neighbor.board);
-                }
-            }    
+            if(isGoal == true)
+                break;
+            
             turn = 1 - turn;
         }           
     }
