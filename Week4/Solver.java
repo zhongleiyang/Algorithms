@@ -3,25 +3,29 @@ class SearchNode implements Comparable<SearchNode>
     public int reachMoves;
     public Board board;
     public SearchNode previous;
+    private int manhattan;
     
     public SearchNode(Board _board, int _reachMoves,SearchNode _previous)
     {
         board = _board;
         reachMoves = _reachMoves;
         previous = _previous;
+        manhattan = board.manhattan();
     }
         
      public int compareTo(SearchNode that) 
-    {
-         int manhattan1 = this.board.manhattan();
-         int manhattan2 = that.board.manhattan();
-         
-         if(manhattan1 +  this.reachMoves < manhattan2 + that.reachMoves)
+    {      
+         if(this.manhattan +  this.reachMoves < that.manhattan + that.reachMoves)
              return -1;
          
-         if(manhattan1 +  this.reachMoves > manhattan2 + that.reachMoves)
+         if(this.manhattan +  this.reachMoves > that.manhattan + that.reachMoves)
              return 1;
-                       
+         
+         if(this.reachMoves < that.reachMoves)
+            return -1;
+         
+         if(this.reachMoves > that.reachMoves)
+             return 1;
          return 0;
     }
 }
@@ -60,9 +64,7 @@ public class Solver
         
         lastNode = new SearchNode[2];
         turn = 0;
-        
-        Queue<SearchNode> candidateList = new Queue<SearchNode>();
-        
+            
         while(!priorityQueue0.isEmpty() && !priorityQueue1.isEmpty())
         {
             MinPQ<SearchNode> priorityQueue;
@@ -77,40 +79,37 @@ public class Solver
                 priorityQueue = priorityQueue1;
                 historyList = historyList1;
             }
-            
-            SearchNode node = priorityQueue.delMin();
-            int manhattan = node.board.manhattan();
-            candidateList.enqueue(node);
-            while(!priorityQueue.isEmpty() && priorityQueue.min().compareTo(node) == 0)
-                candidateList.enqueue(priorityQueue.delMin());
-            
-            while(!candidateList.isEmpty())
+                      
+            lastNode[turn] = priorityQueue.delMin();
+
+            if(lastNode[turn].board.isGoal())
             {
-                lastNode[turn] = candidateList.dequeue();
-                if(lastNode[turn].board.isGoal())
+                isGoal = true;
+                break;                     
+            }  
+    
+            for (Board board : lastNode[turn].board.neighbors())
+            {
+                SearchNode node = lastNode[turn].previous;
+                boolean isFind = false;
+                while(node != null && isFind == false)
                 {
-                    isGoal = true;
-                    break;       
+                    if(board.equals(node.board))
+                        isFind = true;
                     
-                }               
-                for (Board board : lastNode[turn].board.neighbors())
-                {
-                    if(isFindedInHistory(historyList, board) == false)
-                    {
-                        SearchNode neighbor = new SearchNode(board, lastNode[turn].reachMoves + 1, lastNode[turn]); 
-                        priorityQueue.insert(neighbor);
-                        historyList.push(neighbor.board);
-                    }
+                     node = node.previous;
                 }    
-            }
-            
-            if(isGoal == true)
-                break;
-            
+                
+                if(isFind == false)
+                {
+                    SearchNode neighbor = new SearchNode(board, lastNode[turn].reachMoves + 1, lastNode[turn]); 
+                    priorityQueue.insert(neighbor);
+                }
+            }    
+           
             turn = 1 - turn;
         }           
     }
-    
     private boolean isFindedInHistory(Stack<Board> list, Board board)
     {
         for (Board temp : list)
