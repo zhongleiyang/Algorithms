@@ -85,6 +85,10 @@ public class Point implements Comparable<Point> {
    {
       public int compare(Point p1, Point p2)
       {  
+          if(p1 == null || p2 == null)
+              throw new NullPointerException();
+          if(p1 == p2)
+              return 0;
           return Double.compare(slopeTo(p1), slopeTo(p2));
       }
     }
