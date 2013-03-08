@@ -92,6 +92,8 @@ public class KdTree {
    
    public boolean contains(Point2D p)              // does the set contain the point p?
    {
+       if(p == null)
+           return false;
        return contains(root, p);
    }
    
@@ -194,10 +196,10 @@ public class KdTree {
        if(root == null)
            return null;
        
-       return nearest(root, p, root.point);
+       return nearest(root, p, root.point, new RectHV(0.0, 0.0, 1.0, 1.0));
    }
    
-   private Point2D nearest(Node node, Point2D p, Point2D currentNearestPoint, RectHV parentRect)        
+   private Point2D nearest(Node node, Point2D p, Point2D currentNearestPoint, RectHV  parentRect)        
    {
        if(node == null)
            return null;
@@ -211,25 +213,37 @@ public class KdTree {
            currentNearestPoint = node.point;
        }
        double axisLength;  
-       
+       RectHV leftRect,rightRect,firstRect,secondRect;
        if(node.axis == XAXIS)
+       {
            axisLength = p.x() - node.point.x();
+           leftRect = new RectHV(parentRect.xmin(),  parentRect.ymin(), node.point.x(), parentRect.ymax());
+           rightRect = new RectHV(node.point.x(),  parentRect.ymin(), parentRect.xmax(), parentRect.ymax());
+       }
        else
+       {
            axisLength = p.y() - node.point.y();
+           leftRect = new RectHV(parentRect.xmin(),  parentRect.ymin(), parentRect.xmax(), node.point.y());
+           rightRect = new RectHV(parentRect.xmin(),  node.point.y(), parentRect.xmax(), parentRect.ymax());
+       }
        
        Node first,second;
        if(axisLength < 0)
        {
            first = node.left;
            second = node.right;
+           firstRect = leftRect;
+           secondRect = rightRect;
        }
        else
        {
            first = node.right;
            second = node.left;
+           firstRect = rightRect;
+           secondRect = leftRect;
        }
            
-       point = nearest(first, p, currentNearestPoint);
+       point = nearest(first, p, currentNearestPoint, firstRect);
        if(point != null)
        {
            lenth = point.distanceTo(p);
@@ -240,9 +254,9 @@ public class KdTree {
            }
        }
        
-       if(currentNearestLength > Math.abs(axisLength))
+       if(currentNearestLength > secondRect.distanceTo(p))
        {
-           point = nearest(second, p, currentNearestPoint);
+           point = nearest(second, p, currentNearestPoint, secondRect);
            if(point != null)
            {
                lenth = point.distanceTo(p);
